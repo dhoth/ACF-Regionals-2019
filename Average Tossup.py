@@ -41,9 +41,9 @@ def find_most_skewed():
 
 def sort_pdf():
     #toggle on or off depending upon if you include bouncebacks
-    #df1 = df[df.bounceback != 'bounceback']
-    #df1 = df1[df1.buzz_value == 10]
-    df1 = df[df.buzz_value == 10]
+    df1 = df[df.bounceback != 'bounceback']
+    df1 = df1[df1.buzz_value == 10]
+    #df1 = df[df.buzz_value == 10]
     max_gets = len(df1)
     print(max_gets)
     df1 = df1.groupby(['buzz_location_pct']).size().rename('count')
@@ -60,8 +60,9 @@ def sort_cdf():
     cum_array = np.cumsum(pdf_array)
     return cum_array
 
-def plot_cdf():
-    cum_array = sort_cdf()
+def plot_cdf(cum_array = None, best_poly = None):
+    if cum_array is None:
+        cum_array = sort_cdf()
     x_val = np.linspace(.001,1,1000)
     plt.title("CDF Comparison Without Bouncebacks")
     plt.plot(x_val, cum_array, color = 'red', label = "ACF Regs 2019")
@@ -69,11 +70,21 @@ def plot_cdf():
     plt.plot(x_val, np.power(x_val, 3), color = 'yellow', label = 'y = x^3')
     plt.xlabel('Buzz Location Pct')
     plt.ylabel("Cumulative Pct")
+    if best_poly is not None:
+        p = np.poly1d(best_poly)
+        plt.plot(x_val, p(x_val), color = 'blue', label = 'Best Fit Deg '+str(len(best_poly)-1))
     plt.legend(shadow = True)
     plt.grid(True)
     plt.show()
+
+def poly_best_fit(degree):
+    cdf_array = sort_cdf()
+    x_val = np.linspace(.001,1,1000)
+    best_poly = np.polyfit(x = x_val, y = cdf_array, deg = degree)
+    return best_poly
 #find_most_negged()
 #late_buzzes()
 #find_most_skewed()
 #sort_pdf()
-plot_cdf()
+print(poly_best_fit(3))
+plot_cdf(best_poly = poly_best_fit(3))
